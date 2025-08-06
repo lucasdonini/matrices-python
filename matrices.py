@@ -91,7 +91,7 @@ class Matrix(BaseModel):
         return Matrix(raw_data=new)
 
     @staticmethod
-    def __empty_structure(rows, columns) -> List[List[float]]:
+    def __empty_structure(rows: int, columns: int) -> List[List[float]]:
         return [[0] * columns for _ in range(rows)]
 
     def __simple_multiplication(self, n: float) -> Matrix:
@@ -129,7 +129,7 @@ class Matrix(BaseModel):
         lines: List[str] = []
         for row in self.raw_data:
             formatted: List[str] = [f'{x:>{max_width}.2f}' for x in row]    
-            lines.append(f'| {' '.join(formatted)} |')
+            lines.append(f"| {' '.join(formatted)} |")
 
         return '\n' + '\n'.join(lines)
 
@@ -153,12 +153,14 @@ class Matrix(BaseModel):
         return Matrix(raw_data=new)
 
     def __mul__(self, other: Matrix | float | int) -> Matrix:
-        if type(other) in (float, int):
-            return self.__simple_multiplication(other)
-        else:
+        if isinstance(other, (float, int)):
+            return self.__simple_multiplication(float(other))
+        elif isinstance(other, Matrix):
             return self.__complex_multiplication(other)
+        else:
+            raise TypeError(f"Unsupported operand type(s) for *: 'Matrix' and '{type(other).__name__}'")
 
-    def __pow__(self, power: int, modulo=None) -> Matrix:
+    def __pow__(self, power: int) -> Matrix:
         if power < 1:
             raise ValueError('Cannot raise matrices to powers less than 1')
 
@@ -170,5 +172,8 @@ class Matrix(BaseModel):
 
         return new
 
-    def __eq__(self, other: Matrix) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Matrix):
+            raise NotImplementedError(f'Cannot compare types Matrix and {type(other).__name__}')
+        
         return self.raw_data == other.raw_data
